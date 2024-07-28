@@ -1,4 +1,4 @@
-package org.dodo.dodo.database.models;
+package org.dodo.dodo.database.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

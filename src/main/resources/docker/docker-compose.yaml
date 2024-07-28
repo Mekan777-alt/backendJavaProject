@@ -1,0 +1,61 @@
+version: '3.7'
+services:
+  outAdapter:
+    image: openjdk:17
+    container_name: my-app
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    volumes:
+      - ./backendJava:/home/mekan
+    command: java -Dspring.config.location=/home/mekan/application.yaml -XX:+HeapDumpOnOutOfMemoryError -jar /home/mekan/dodo-0.0.1-SNAPSHOT.jar
+    working_dir: /opt/docker
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    networks:
+      eip-net:
+        ipv4_address: 172.20.0.2
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=backendProject
+    volumes:
+      - ${PWD}/postgresql/data:/var/lib/postgresql/data
+      - ${PWD}/postgresql/backup:/backup
+    ports:
+      - 5432:5432
+    networks:
+      eip-net:
+        ipv4_address: 172.20.0.8
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=mekan2678@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=12345
+    ports:
+      - 5050:80 #web-console
+    volumes:
+      - ${PWD}/pgadmin/pgadmin:/var/lib/pgadmin
+    networks:
+      eip-net:
+        ipv4_address: 172.20.0.9
+
+networks:
+  eip-net:
+    name: eip-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.1/24
